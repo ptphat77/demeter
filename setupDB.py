@@ -1,25 +1,17 @@
-import psycopg2
-from checkEnvironment import variableEnv
+from config.connectDB import connectDB
 
-hostname = variableEnv["POSTGRES_URL"]
-database = variableEnv["POSTGRES_DATABASE_NAME"]
-username = variableEnv["POSTGRES_USERNAME"]
-password = variableEnv["POSTGRES_PASSWORD"]
-port = variableEnv["POSTGRES_PORT"]
 conn = None
 cur = None
 
 try:
-    conn = psycopg2.connect(
-        host=hostname, dbname=database, user=username, password=password, port=port
-    )
+    conn = connectDB
 
     cur = conn.cursor()
 
     # Create contract table
     create_script = """
         CREATE TABLE IF NOT EXISTS contract (
-            id int PRIMARY KEY,
+            id SERIAL PRIMARY KEY,
             address varchar(42) NOT NULL,
             preprocessBytecode text NOT NULL,
             label bool NOT NULL
@@ -35,12 +27,9 @@ try:
         )
     """
     cur.execute(select_script)
-    result = cur.fetchall()
+    resultQuery = cur.fetchone()
 
-    isLastBlockBumberBcannedTableExists = result[0][0]
-
-    print(isLastBlockBumberBcannedTableExists)
-
+    isLastBlockBumberBcannedTableExists = resultQuery[0]
     if not isLastBlockBumberBcannedTableExists:
         create_script = """
             CREATE TABLE IF NOT EXISTS last_block_number_scanned (
