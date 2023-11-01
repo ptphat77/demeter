@@ -1,2 +1,2 @@
 /.env.development
-/demeter.py
+__pycache__
