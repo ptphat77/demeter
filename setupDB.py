@@ -11,10 +11,10 @@ try:
     # Create contract table
     create_script = """
         CREATE TABLE IF NOT EXISTS contract (
-            id SERIAL PRIMARY KEY,
             address varchar(42) NOT NULL,
             preprocessBytecode text NOT NULL,
-            label bool NOT NULL
+            label bool NOT NULL,
+            UNIQUE(address, preprocessBytecode)
         )
     """
     cur.execute(create_script)
