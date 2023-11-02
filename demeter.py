@@ -1,7 +1,10 @@
+# import library, module python
 from web3 import Web3
 
+# import file
 from config.connectDB import connectDB
 from checkEnvironment import variableEnv
+import preprocessBytecode
 
 
 def getStartBlockNumber():
@@ -39,6 +42,8 @@ def insertContractInfoToDB(contractAddress, contractBytecode):
         cur = conn.cursor()
 
         # "ON CONFLICT DO NOTHING" handle duplicate contract address and contract preprocessBytecode
+        # scan block again => duplicate contract address
+        # preprocessBytecode, merge operations => duplicate contract preprocessBytecode
         insert_script = """
             INSERT INTO contract (address, preprocessBytecode, label)
             VALUES ('{}'::varchar, '{}'::text, {}::bool)
@@ -72,7 +77,6 @@ def updateStartBlockNumber(blockNumber):
         """.format(
             blockNumber
         )
-        print(update_script)
         cur.execute(update_script)
 
         conn.commit()
@@ -97,7 +101,6 @@ for blockNumber in range(startBlockNumber, endBlockNumber):
     block = w3.eth.get_block(blockNumber, True)
     print(blockNumber)
     for transaction in block["transactions"]:
-        # if transaction["input"] == None => error
         if hexToString(transaction["input"]).startswith("0x60806040"):
             transactionInfo = w3.eth.get_transaction_receipt(
                 hexToString(transaction["hash"])
@@ -110,8 +113,9 @@ for blockNumber in range(startBlockNumber, endBlockNumber):
                 contractBytecode = hexToString(ugly_bytecode)
 
                 # preprocessBytecode
-                # preprocessBytecode()
+                preprocessedBytecode = preprocessBytecode(contractBytecode)
+                print(preprocessedBytecode)
 
-                insertContractInfoToDB(contractAddress, contractBytecode)
+                insertContractInfoToDB(contractAddress, preprocessedBytecode)
 
     updateStartBlockNumber(blockNumber)
