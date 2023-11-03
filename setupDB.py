@@ -9,12 +9,13 @@ try:
     cur = conn.cursor()
 
     # Create contract table
+    # BUG: UNIQUE(preprocessBytecode)
     create_script = """
         CREATE TABLE IF NOT EXISTS contract (
             address varchar(42) NOT NULL,
             preprocessBytecode text NOT NULL,
             label bool NOT NULL,
-            UNIQUE(address, preprocessBytecode)
+            UNIQUE(address)
         )
     """
     cur.execute(create_script)
@@ -47,7 +48,7 @@ try:
 
     conn.commit()
 except Exception as error:
-    print(">>> error: ", error)
+    print(">>> database error: ", error)
 finally:
     if cur != None:
         cur.close()

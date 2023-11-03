@@ -5,6 +5,11 @@ from web3 import Web3
 from config.connectDB import connectDB
 from checkEnvironment import variableEnv
 import preprocessBytecode
+import scanVulnerabilities
+import setupScanTool
+
+#  Setup scan tool before scanning
+setupScanTool()
 
 
 def getStartBlockNumber():
@@ -25,7 +30,7 @@ def getStartBlockNumber():
 
         return resultQuery[0]
     except Exception as error:
-        print(">>> error: ", error)
+        print(">>> database error: ", error)
     finally:
         if cur != None:
             cur.close()
@@ -33,7 +38,7 @@ def getStartBlockNumber():
             conn.close()
 
 
-def insertContractInfoToDB(contractAddress, contractBytecode):
+def insertContractInfoToDB(contractAddress, contractBytecode, label):
     conn = None
     cur = None
     try:
@@ -50,14 +55,14 @@ def insertContractInfoToDB(contractAddress, contractBytecode):
             ON CONFLICT DO NOTHING
             returning address
         """.format(
-            contractAddress, contractBytecode, "true"
+            contractAddress, contractBytecode, str(label)
         )
 
         cur.execute(insert_script)
 
         conn.commit()
     except Exception as error:
-        print(">>> error: ", error)
+        print(">>> database error: ", error)
 
 
 def hexToString(hex):
@@ -81,7 +86,7 @@ def updateStartBlockNumber(blockNumber):
 
         conn.commit()
     except Exception as error:
-        print(">>> error: ", error)
+        print(">>> database error: ", error)
 
 
 ##### Get contract information #####
@@ -94,7 +99,8 @@ w3 = Web3(
 )
 
 # startBlockNumber = getStartBlockNumber()
-startBlockNumber = 14047678
+# startBlockNumber = 14047678
+startBlockNumber = 14047684
 endBlockNumber = w3.eth.get_block_number()
 
 for blockNumber in range(startBlockNumber, endBlockNumber):
@@ -114,8 +120,10 @@ for blockNumber in range(startBlockNumber, endBlockNumber):
 
                 # preprocessBytecode
                 preprocessedBytecode = preprocessBytecode(contractBytecode)
-                print(preprocessedBytecode)
 
-                insertContractInfoToDB(contractAddress, preprocessedBytecode)
+                # scan vulnerability
+                label = scanVulnerabilities(contractBytecode)
+
+                insertContractInfoToDB(contractAddress, preprocessedBytecode, label)
 
     updateStartBlockNumber(blockNumber)
