@@ -11,6 +11,6 @@ python3 ./setupDB.py
 docker pull luongnguyen/oyente
 
 # Install Mythril
-mkdir scanVulnTool
-git clone https://github.com/Consensys/mythril.git scanVulnTool/mythril
+mkdir ../scanVulnTool
+git clone https://github.com/Consensys/mythril.git ../scanVulnTool/mythril
 pip3 install mythril

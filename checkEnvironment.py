@@ -7,4 +7,3 @@ if isDevelopment:
     variableEnv = dotenv_values(".env.development")
 else:
     variableEnv = dotenv_values(".env.production")
-export = variableEnv

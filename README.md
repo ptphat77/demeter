@@ -15,7 +15,7 @@ git clone https://github.com/ptphat77/demeter.git
 4. Run setup.sh
 
 ```
-cd demeter && sudo ./setup.sh
+cd demeter/setup && sudo ./setup.sh
 ```
 
 ## Usage
