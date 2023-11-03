@@ -10,7 +10,7 @@ def getStartBlockNumber():
         cur = conn.cursor()
 
         select_script = """
-            SELECT block_number from last_block_number_scanned LIMIT 1
+            SELECT block_number FROM last_block_number_scanned LIMIT 1
         """
         cur.execute(select_script)
         resultQuery = cur.fetchone()
@@ -27,7 +27,7 @@ def getStartBlockNumber():
             conn.close()
 
 
-def insertContractInfoToDB(contractAddress, contractBytecode, label):
+def isExistsPreprocessedBytecode(preprocessedBytecode):
     conn = None
     cur = None
     try:
@@ -35,18 +35,35 @@ def insertContractInfoToDB(contractAddress, contractBytecode, label):
 
         cur = conn.cursor()
 
-        # "ON CONFLICT DO NOTHING" handle duplicate contract address and contract preprocessBytecode
-        # scan block again => duplicate contract address
-        # preprocessBytecode, merge operations => duplicate contract preprocessBytecode
-        insert_script = """
-            INSERT INTO contract (address, preprocess_bytecode, label)
-            VALUES ('{}'::varchar, '{}'::text, {}::bool)
-            ON CONFLICT DO NOTHING
-            returning address
+        select_script = """
+            SELECT label FROM contract WHERE preprocess_bytecode = '{}'
         """.format(
-            contractAddress, contractBytecode, str(label)
+            preprocessedBytecode
         )
+        cur.execute(select_script)
+        resultQuery = cur.fetchone()
 
+        conn.commit()
+
+        return resultQuery
+    except Exception as error:
+        print(">>> database error: ", error)
+
+
+def insertContractInfoToDB(preprocessedBytecode, label):
+    conn = None
+    cur = None
+    try:
+        conn = connectDB
+
+        cur = conn.cursor()
+
+        insert_script = """
+            INSERT INTO contract (preprocess_bytecode, label)
+            VALUES ('{}'::text, {}::bool)
+        """.format(
+            preprocessedBytecode, str(label)
+        )
         cur.execute(insert_script)
 
         conn.commit()
