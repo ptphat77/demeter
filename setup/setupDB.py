@@ -14,11 +14,11 @@ try:
     cur = conn.cursor()
 
     # Create contract table
-    # BUG: UNIQUE(preprocessBytecode)
+    # BUG: UNIQUE(preprocess_bytecode)
     create_script = """
         CREATE TABLE IF NOT EXISTS contract (
             address varchar(42) NOT NULL,
-            preprocessBytecode text NOT NULL,
+            preprocess_bytecode text NOT NULL,
             label bool NOT NULL,
             UNIQUE(address)
         )

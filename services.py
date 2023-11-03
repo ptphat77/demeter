@@ -39,7 +39,7 @@ def insertContractInfoToDB(contractAddress, contractBytecode, label):
         # scan block again => duplicate contract address
         # preprocessBytecode, merge operations => duplicate contract preprocessBytecode
         insert_script = """
-            INSERT INTO contract (address, preprocessBytecode, label)
+            INSERT INTO contract (address, preprocess_bytecode, label)
             VALUES ('{}'::varchar, '{}'::text, {}::bool)
             ON CONFLICT DO NOTHING
             returning address
