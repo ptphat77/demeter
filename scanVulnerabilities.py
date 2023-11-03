@@ -6,7 +6,7 @@ def callOyente():
     label = False
 
     result = subprocess.check_output(
-        "docker cp /home/ubuntu/bytecode.txt oyentecon:/oyente/oyente/bytecode.txt && docker exec oyentecon python oyente/oyente.py -s /oyente/oyente/bytecode.txt -b -ce",
+        "docker cp ./bytecode.txt oyentecon:/oyente/oyente/bytecode.txt && docker exec oyentecon python oyente/oyente.py -s /oyente/oyente/bytecode.txt -b -ce",
         shell=True,
     )
 
