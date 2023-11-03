@@ -118,6 +118,9 @@ for blockNumber in range(startBlockNumber, endBlockNumber):
                 ugly_bytecode = w3.eth.get_code(contractAddress)
                 contractBytecode = hexToString(ugly_bytecode)
 
+                # Remove prefix 0x
+                contractBytecode = contractBytecode.replace("0x", "", 1)
+
                 # preprocessBytecode
                 preprocessedBytecode = preprocessBytecode(contractBytecode)
 

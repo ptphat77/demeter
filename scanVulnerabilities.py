@@ -18,9 +18,6 @@ def callOyente():
 
 
 def scanVulnerabilities(originBytecode):
-    # Remove prefix 0x
-    originBytecode = originBytecode.replace("0x", "", 1)
-
     with open("./bytecode.txt", "w") as file:
         file.write(originBytecode)
 
