@@ -50,7 +50,7 @@ def isExistsPreprocessedBytecode(preprocessedBytecode):
         print(">>> database error: ", error)
 
 
-def insertContractInfoToDB(preprocessedBytecode, label):
+def insertContractInfoToDB(preprocessedBytecode, vulnerabilities, label):
     conn = None
     cur = None
     try:
@@ -59,10 +59,10 @@ def insertContractInfoToDB(preprocessedBytecode, label):
         cur = conn.cursor()
 
         insert_script = """
-            INSERT INTO contract (preprocess_bytecode, label)
-            VALUES ('{}'::text, {}::bool)
+            INSERT INTO contract (preprocess_bytecode, vulnerabilities, label)
+            VALUES ('{}'::text, '{}'::text, {}::bool)
         """.format(
-            preprocessedBytecode, str(label)
+            preprocessedBytecode, vulnerabilities, str(label)
         )
         cur.execute(insert_script)
 

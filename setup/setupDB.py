@@ -18,6 +18,7 @@ try:
     create_script = """
         CREATE TABLE IF NOT EXISTS contract (
             preprocess_bytecode text NOT NULL,
+            vulnerabilities text NOT NULL,
             label bool NOT NULL,
             UNIQUE(preprocess_bytecode)
         )

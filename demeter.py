@@ -52,14 +52,14 @@ for blockNumber in range(startBlockNumber, endBlockNumber):
                 # preprocessBytecode
                 preprocessedBytecode = preprocessBytecode(contractBytecode)
 
-                # After preprocess bytecode, merge operations => may be duplicate contract preprocessedBytecode
+                # After preprocess bytecode, merge operations => may be duplicate contract preprocessBytecode
                 if isExistsPreprocessedBytecode(preprocessedBytecode):
                     print('>>> Found duplicate bytecode!!!')
                     continue
 
                 # scan vulnerability
-                label = scanVulnerabilities(contractBytecode)
+                scanResult = scanVulnerabilities(contractBytecode)
 
-                insertContractInfoToDB(preprocessedBytecode, label)
+                insertContractInfoToDB(preprocessedBytecode, scanResult["vulnerabilities"], scanResult["label"])
 
     updateStartBlockNumber(blockNumber)
