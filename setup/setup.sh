@@ -11,6 +11,9 @@ python3 ./setupDB.py
 docker pull luongnguyen/oyente
 
 # Install Mythril
-mkdir ../scanVulnTool
-git clone https://github.com/Consensys/mythril.git ../scanVulnTool/mythril
+apt update
+apt install software-properties-common -y
+add-apt-repository ppa:ethereum/ethereum -y
+apt install solc -y
+apt install libssl-dev python3-dev python3-pip -y
 pip3 install mythril

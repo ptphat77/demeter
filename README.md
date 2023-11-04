@@ -18,6 +18,8 @@ git clone https://github.com/ptphat77/demeter.git
 cd demeter/setup && sudo bash ./setup.sh
 ```
 
+5. Restart
+
 ## Usage
 
 Run:
