@@ -5,7 +5,7 @@ apt install docker.io python3-pip -y
 pip3 install web3 python-dotenv psycopg2-binary
 
 # Setup Database
-python3 ./setupDB.py
+python3 ./setup/setupDB.py
 
 # Install Oyente
 docker pull luongnguyen/oyente
