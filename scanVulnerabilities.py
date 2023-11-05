@@ -51,8 +51,6 @@ def callMythril():
     if vulnerabilities:
         label = True
 
-    print({"vulnerabilities": vulnerabilities, "label": label})
-
     return {"vulnerabilities": vulnerabilities, "label": label}
 
 
