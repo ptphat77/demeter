@@ -4,21 +4,56 @@ import subprocess
 
 def callOyente():
     label = False
+    vulnerabilities = ""
+    result=""
 
-    result = subprocess.check_output(
-        "docker cp ./bytecode.txt oyentecon:/oyente/oyente/bytecode.txt && docker exec oyentecon python oyente/oyente.py -s /oyente/oyente/bytecode.txt -b -ce",
-        shell=True,
+    vulnArr = [
+        "Callstack Depth Attack Vulnerability",
+        "Transaction-Ordering Dependence (TOD)",
+        "Timestamp Dependency",
+        "Re-Entrancy Vulnerability",
+    ]
+
+    subprocess.check_output(
+        "docker cp ./bytecode.txt oyentecon:/oyente/oyente/bytecode.txt", shell=True
     )
-    vulnerabilities = result.decode("utf_8", "strict")
+
+    try:
+        timeout = 90
+        result = subprocess.check_output(
+            "docker exec oyentecon python oyente/oyente.py -s /oyente/oyente/bytecode.txt -b -ce --timeout {}".format(
+                timeout
+            ),
+            shell=True,
+            stderr=subprocess.STDOUT,
+            timeout=timeout * 2,
+        )
+        result = result.decode("utf_8", "strict")
+
+    except subprocess.CalledProcessError as grepexc:
+        result = grepexc.output.decode("utf_8", "strict")
+        print(
+            ">>> Oyente error: ",
+            grepexc.returncode,
+            result,
+        )
+
+    for vuln in vulnArr:
+        if vuln in result:
+            vulnerabilities += vuln + ";"
 
     if vulnerabilities:
         label = True
+
+    print({"vulnerabilities": vulnerabilities, "label": label})
 
     return {"vulnerabilities": vulnerabilities, "label": label}
 
 
 def callMythril():
     label = False
+    vulnerabilities = ""
+    result=""
 
     vulnArr = [
         "Exception State",
@@ -36,13 +71,22 @@ def callMythril():
         "Unprotected Ether Withdrawal",
     ]
 
-    result = subprocess.check_output(
-        "myth analyze -f bytecode.txt --execution-timeout 90",
-        shell=True,
-    )
-    result = result.decode("utf_8", "strict")
+    try:
+        timeout = 90
+        result = subprocess.check_output(
+            "myth analyze -f bytecode.txt --execution-timeout {}".format(timeout),
+            shell=True,
+            timeout=timeout * 2,
+        )
+        result = result.decode("utf_8", "strict")
 
-    vulnerabilities = ""
+    except subprocess.CalledProcessError as grepexc:
+        result = grepexc.output.decode("utf_8", "strict")
+        print(
+            ">>> Mythril error: ",
+            grepexc.returncode,
+            result,
+        )
 
     for vuln in vulnArr:
         if vuln in result:

@@ -26,7 +26,7 @@ w3 = Web3(
     )
 )
 
-# startBlockNumber = getStartBlockNumber()
+# startBlockNumber = getStartBlockNumber() + 1
 # startBlockNumber = 14047678
 startBlockNumber = 14047684
 endBlockNumber = w3.eth.get_block_number()
