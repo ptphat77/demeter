@@ -10,8 +10,6 @@ connectDB = psycopg2.connect(
 )
 
 if connectDB.status:
-    print('Connecting to database successfully')
+    print("Connecting to database successfully")
 else:
-    print('Connecting to database failed')
-
-export = connectDB
+    print("Connecting to database failed")

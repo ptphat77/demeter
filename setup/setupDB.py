@@ -1,7 +1,7 @@
 import sys
 
 # setting path
-sys.path.append("../Demeter")
+sys.path.append(".")
 
 from config.connectDB import connectDB
 
