@@ -36,7 +36,7 @@ def isExistsPreprocessedBytecode(preprocessedBytecode):
         cur = conn.cursor()
 
         select_script = """
-            SELECT label FROM contract WHERE preprocess_bytecode = '{}'
+            SELECT label FROM contract WHERE md5_index = md5('{}'::text)
         """.format(
             preprocessedBytecode
         )
@@ -59,10 +59,10 @@ def insertContractInfoToDB(preprocessedBytecode, vulnerabilities, label):
         cur = conn.cursor()
 
         insert_script = """
-            INSERT INTO contract (preprocess_bytecode, vulnerabilities, label)
-            VALUES ('{}'::text, '{}'::text, {}::bool)
+            INSERT INTO contract (md5_index, preprocess_bytecode, vulnerabilities, label)
+            VALUES (md5('{}'::text), '{}'::text, '{}'::text, {}::bool)
         """.format(
-            preprocessedBytecode, vulnerabilities, str(label)
+            preprocessedBytecode, preprocessedBytecode, vulnerabilities, str(label)
         )
         cur.execute(insert_script)
 

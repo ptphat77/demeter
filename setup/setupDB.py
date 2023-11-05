@@ -17,10 +17,11 @@ try:
     # BUG: UNIQUE(preprocess_bytecode)
     create_script = """
         CREATE TABLE IF NOT EXISTS contract (
+            md5_index text NOT NULL,
             preprocess_bytecode text NOT NULL,
             vulnerabilities text NOT NULL,
             label bool NOT NULL,
-            UNIQUE(preprocess_bytecode)
+            UNIQUE(md5_index)
         )
     """
     cur.execute(create_script)
