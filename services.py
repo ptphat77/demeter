@@ -1,91 +1,57 @@
 from config.connectDB import connectDB
 
 
-def getStartBlockNumber():
+def queryExec(queryScript, isHasReturn=True):
     conn = None
     cur = None
     try:
         conn = connectDB
 
         cur = conn.cursor()
-
-        select_script = """
-            SELECT block_number FROM last_block_number_scanned LIMIT 1
-        """
-        cur.execute(select_script)
-        resultQuery = cur.fetchone()
-
+        cur.execute(queryScript)
         conn.commit()
 
-        return resultQuery[0]
+        if isHasReturn:
+            resultQuery = cur.fetchone()
+            return resultQuery
+
     except Exception as error:
         print(">>> database error: ", error)
-    finally:
-        if cur != None:
-            cur.close()
-        if conn != None:
-            conn.close()
+        print(">>> queryScript: ", " ".join((queryScript.split())[:2]), "...")
+
+
+def getStartBlockNumber():
+    resultQuery = queryExec(
+        "SELECT block_number FROM last_block_number_scanned LIMIT 1"
+    )
+    return resultQuery[0]
 
 
 def isExistsPreprocessedBytecode(preprocessedBytecode):
-    conn = None
-    cur = None
-    try:
-        conn = connectDB
-
-        cur = conn.cursor()
-
-        select_script = """
-            SELECT label FROM contract WHERE md5_index = md5('{}'::text)
-        """.format(
+    resultQuery = queryExec(
+        "SELECT label FROM contract WHERE md5_index = md5('{}'::text)".format(
             preprocessedBytecode
         )
-        cur.execute(select_script)
-        resultQuery = cur.fetchone()
+    )
 
-        conn.commit()
-
-        return resultQuery
-    except Exception as error:
-        print(">>> database error: ", error)
+    return resultQuery
 
 
 def insertContractInfoToDB(preprocessedBytecode, vulnerabilities, label):
-    conn = None
-    cur = None
-    try:
-        conn = connectDB
-
-        cur = conn.cursor()
-
-        insert_script = """
-            INSERT INTO contract (md5_index, preprocess_bytecode, vulnerabilities, label)
+    queryExec(
+        """ INSERT INTO contract (md5_index, preprocess_bytecode, vulnerabilities, label)
             VALUES (md5('{}'::text), '{}'::text, '{}'::text, {}::bool)
         """.format(
             preprocessedBytecode, preprocessedBytecode, vulnerabilities, str(label)
-        )
-        cur.execute(insert_script)
-
-        conn.commit()
-    except Exception as error:
-        print(">>> database error: ", error)
+        ),
+        False,
+    )
 
 
 def updateStartBlockNumber(blockNumber):
-    conn = None
-    cur = None
-    try:
-        conn = connectDB
-
-        cur = conn.cursor()
-
-        update_script = """
-            UPDATE last_block_number_scanned SET block_number={} WHERE id=1
-        """.format(
+    queryExec(
+        "UPDATE last_block_number_scanned SET block_number={} WHERE id=1 RETURNING block_number".format(
             blockNumber
-        )
-        cur.execute(update_script)
-
-        conn.commit()
-    except Exception as error:
-        print(">>> database error: ", error)
+        ),
+        False,
+    )
