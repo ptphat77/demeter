@@ -30,7 +30,7 @@ try:
     select_script = """
         SELECT EXISTS (
             SELECT FROM information_schema.tables
-            WHERE table_name='last_block_number_scanned'
+            WHERE table_name='start_block_number'
         )
     """
     cur.execute(select_script)
@@ -39,19 +39,26 @@ try:
     isLastBlockBumberBcannedTableExists = resultQuery[0]
     if not isLastBlockBumberBcannedTableExists:
         create_script = """
-            CREATE TABLE IF NOT EXISTS last_block_number_scanned (
-                id SERIAL PRIMARY KEY,
-                block_number int NOT NULL
+            CREATE TABLE IF NOT EXISTS start_block_number (
+                network_name varchar(20) NOT NULL,
+                block_number int NOT NULL,
+                UNIQUE(network_name)
             )
         """
         cur.execute(create_script)
 
-        insert_script = """
-            INSERT INTO last_block_number_scanned (block_number)
-            VALUES (0);
-        """
-        cur.execute(insert_script)
+        # add start_block_number default value is 0
+        networkNames = ["mainnet", "goerli", "sepolia"]
+        for network in networkNames:
+            insert_script = """
+                INSERT INTO start_block_number (network_name, block_number)
+                VALUES ('{}',0);
+            """.format(
+                network
+            )
+            cur.execute(insert_script)
 
+    print("Setup database successfully!!!")
     conn.commit()
 except Exception as error:
     print(">>> database error: ", error)

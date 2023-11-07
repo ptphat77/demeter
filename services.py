@@ -16,13 +16,13 @@ def queryExec(queryScript, isHasReturn=True):
             return resultQuery
 
     except Exception as error:
-        print(">>> database error: ", error)
-        print(">>> queryScript: ", " ".join((queryScript.split())[:2]), "...")
+        print(">>> Database error: ", error)
+        print(">>> Query script: ", " ".join((queryScript.split())[:2]), "...")
 
 
-def getStartBlockNumber():
+def getStartBlockNumber(networkName):
     resultQuery = queryExec(
-        "SELECT block_number FROM last_block_number_scanned LIMIT 1"
+        "SELECT block_number FROM start_block_number WHERE network_name='{}'".format(networkName)
     )
     return resultQuery[0]
 
@@ -33,7 +33,6 @@ def isExistsPreprocessedBytecode(preprocessedBytecode):
             preprocessedBytecode
         )
     )
-
     return resultQuery
 
 
@@ -48,10 +47,10 @@ def insertContractInfoToDB(preprocessedBytecode, vulnerabilities, label):
     )
 
 
-def updateStartBlockNumber(blockNumber):
+def updateStartBlockNumber(networkName, blockNumber):
     queryExec(
-        "UPDATE last_block_number_scanned SET block_number={} WHERE id=1 RETURNING block_number".format(
-            blockNumber
+        "UPDATE start_block_number SET block_number={} WHERE network_name='{}'".format(
+            blockNumber, networkName
         ),
         False,
     )
