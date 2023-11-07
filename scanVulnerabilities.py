@@ -1,5 +1,6 @@
 import sys
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
 
 
 # Run scan command && Extract vulnerbilities name
@@ -73,7 +74,7 @@ def callMythril():
         "Unprotected Ether Withdrawal",
     ]
 
-    timeout = 90
+    timeout = 900
     scanCommand = "myth analyze -f bytecode.txt --execution-timeout {}".format(timeout)
     Mythril = "Mythril"
 
@@ -85,25 +86,37 @@ def scanVulnerabilities(originBytecode):
     with open("./bytecode.txt", "w") as file:
         file.write(originBytecode)
 
-    # Scan vuln
-    oyenteResult = callOyente()
-    mythrilResult = callMythril()
+    # Call scan function with multithreading
+    threadNames = {"oyente": callMythril, "mythril": callOyente}
+
+    with ThreadPoolExecutor() as executor:
+        futures = {name: executor.submit(func) for name, func in threadNames.items()}
+
+        threadResults = {name: future.result() for name, future in futures.items()}
 
     # Determine label
-    label = oyenteResult["label"] or mythrilResult["label"]
+    labelSummary = threadResults["oyente"]["label"] or threadResults["mythril"]["label"]
 
     # Merge all vulnerabilities
-    vulnerabilities = oyenteResult["vulnerabilities"] + mythrilResult["vulnerabilities"]
+    vulnerabilitiesSummary = (
+        threadResults["oyente"]["vulnerabilities"]
+        + threadResults["mythril"]["vulnerabilities"]
+    )
 
-    if vulnerabilities == "":
-        vulnerabilities = "None"
+    if vulnerabilitiesSummary == "":
+        vulnerabilitiesSummary = "None"
     else:
         # Remove ";" at the end of the string
-        vulnerabilities = (
-            vulnerabilities[:-1] if vulnerabilities[-1] == ";" else vulnerabilities
+        vulnerabilitiesSummary = (
+            vulnerabilitiesSummary[:-1]
+            if vulnerabilitiesSummary[-1] == ";"
+            else vulnerabilitiesSummary
         )
 
-    return {"vulnerabilities": vulnerabilities, "label": label}
+    return {
+        "vulnerabilitiesSummary": vulnerabilitiesSummary,
+        "labelSummary": labelSummary,
+    }
 
 
 sys.modules[__name__] = scanVulnerabilities

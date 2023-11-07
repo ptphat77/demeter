@@ -10,7 +10,7 @@ from services import *
 
 
 #  Setup scan tool before scanning
-# setupScanTool()
+setupScanTool()
 
 
 def hexToString(hex):
@@ -26,7 +26,9 @@ for networkName in networkNames:
     # Connect to Ethereum node
     w3 = Web3(
         Web3.HTTPProvider(
-            "https://{}.infura.io/v3/{}".format(networkName, variableEnv["INFURA_API_KEY"])
+            "https://{}.infura.io/v3/{}".format(
+                networkName, variableEnv["INFURA_API_KEY"]
+            )
         )
     )
 
@@ -62,12 +64,12 @@ for networkName in networkNames:
                         continue
 
                     # scan vulnerability
-                    # scanResult = scanVulnerabilities(contractBytecode)
+                    scanResult = scanVulnerabilities(contractBytecode)
 
                     insertContractInfoToDB(
                         preprocessedBytecode,
-                        "vulnerabilities",
-                        True,
+                        scanResult["vulnerabilities"],
+                        scanResult["label"],
                     )
 
         updateStartBlockNumber(networkName, blockNumber + 1)

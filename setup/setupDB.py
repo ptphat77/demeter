@@ -3,6 +3,7 @@ import sys
 # setting path
 sys.path.append(".")
 
+
 from config.connectDB import connectDB
 
 conn = None
