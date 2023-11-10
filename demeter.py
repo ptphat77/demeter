@@ -68,8 +68,8 @@ for networkName in networkNames:
 
                     insertContractInfoToDB(
                         preprocessedBytecode,
-                        scanResult["vulnerabilities"],
-                        scanResult["label"],
+                        scanResult["vulnerabilitiesSummary"],
+                        scanResult["labelSummary"],
                     )
 
         updateStartBlockNumber(networkName, blockNumber + 1)
