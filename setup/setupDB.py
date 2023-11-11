@@ -14,15 +14,26 @@ try:
 
     cur = conn.cursor()
 
-    # Create contract table
-    # BUG: UNIQUE(preprocess_bytecode)
+    # Create contract_dataset table
     create_script = """
-        CREATE TABLE IF NOT EXISTS contract (
+        CREATE TABLE IF NOT EXISTS contract_dataset (
             md5_index text NOT NULL,
             preprocess_bytecode text NOT NULL,
             vulnerabilities text NOT NULL,
             label bool NOT NULL,
             UNIQUE(md5_index)
+        )
+    """
+    cur.execute(create_script)
+
+    # Create contract_info table
+    create_script = """
+        CREATE TABLE IF NOT EXISTS contract_info (
+            address varchar(42) NOT NULL,
+            source_code text NOT NULL,
+            bytecode text NOT NULL,
+            abi text NOT NULL,
+            UNIQUE(address)
         )
     """
     cur.execute(create_script)

@@ -18,27 +18,31 @@ def queryExec(queryScript, isHasReturn=True):
     except Exception as error:
         print(">>> Database error: ", error)
         print(">>> Query script: ", " ".join((queryScript.split())[:2]), "...")
+        # print(">>> Query script: ", queryScript)
+        exit()
 
 
 def getStartBlockNumber(networkName):
     resultQuery = queryExec(
-        "SELECT block_number FROM start_block_number WHERE network_name='{}'".format(networkName)
+        "SELECT block_number FROM start_block_number WHERE network_name='{}'".format(
+            networkName
+        )
     )
     return resultQuery[0]
 
 
 def isExistsPreprocessedBytecode(preprocessedBytecode):
     resultQuery = queryExec(
-        "SELECT label FROM contract WHERE md5_index = md5('{}'::text)".format(
+        "SELECT label FROM contract_dataset WHERE md5_index = md5('{}'::text)".format(
             preprocessedBytecode
         )
     )
     return resultQuery
 
 
-def insertContractInfoToDB(preprocessedBytecode, vulnerabilities, label):
+def insertPreprocessedBytecodeToDB(preprocessedBytecode, vulnerabilities, label):
     queryExec(
-        """ INSERT INTO contract (md5_index, preprocess_bytecode, vulnerabilities, label)
+        """ INSERT INTO contract_dataset (md5_index, preprocess_bytecode, vulnerabilities, label)
             VALUES (md5('{}'::text), '{}'::text, '{}'::text, {}::bool)
         """.format(
             preprocessedBytecode, preprocessedBytecode, vulnerabilities, str(label)
@@ -54,3 +58,22 @@ def updateStartBlockNumber(networkName, blockNumber):
         ),
         False,
     )
+
+
+def insertCotnractInfoToDB(address, sourceCode, bytecode, abi):
+    conn = None
+    cur = None
+    try:
+        conn = connectDB
+
+        cur = conn.cursor()
+        queryScript = """INSERT INTO contract_info (address, source_code, bytecode, abi) VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING"""
+        data = (address, sourceCode, bytecode, abi)
+        cur.execute(queryScript, data)
+        conn.commit()
+
+    except Exception as error:
+        print(">>> Database error: ", error)
+        print(">>> Query script: ", " ".join((queryScript.split())[:2]), "...")
+        # print(">>> Query script: ", queryScript)
+        exit()

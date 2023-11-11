@@ -7,6 +7,7 @@ import preprocessBytecode
 import scanVulnerabilities
 import setupScanTool
 from services import *
+from contractLoader import contractLoader
 
 
 #  Setup scan tool before scanning
@@ -34,7 +35,7 @@ for networkName in networkNames:
 
     # startBlockNumber = getStartBlockNumber(networkName)
     # startBlockNumber = 14047678
-    startBlockNumber = 14047684
+    startBlockNumber = 14047731
     endBlockNumber = w3.eth.get_block_number()
 
     for blockNumber in range(startBlockNumber, endBlockNumber):
@@ -52,6 +53,9 @@ for networkName in networkNames:
                     ugly_bytecode = w3.eth.get_code(contractAddress)
                     contractBytecode = hexToString(ugly_bytecode)
 
+                    # Collect contract information
+                    contractLoader(contractAddress, contractBytecode, networkName)
+
                     # Remove prefix 0x
                     contractBytecode = contractBytecode.replace("0x", "", 1)
 
@@ -66,7 +70,7 @@ for networkName in networkNames:
                     # scan vulnerability
                     scanResult = scanVulnerabilities(contractBytecode)
 
-                    insertContractInfoToDB(
+                    insertPreprocessedBytecodeToDB(
                         preprocessedBytecode,
                         scanResult["vulnerabilitiesSummary"],
                         scanResult["labelSummary"],
