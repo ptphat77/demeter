@@ -1,13 +1,7 @@
-import etherscan
 import requests
 
 from checkEnvironment import variableEnv
 from services import insertCotnractInfoToDB
-
-es = etherscan.Client(
-    api_key=variableEnv["ETHERSCAN_API_KEY"],
-    cache_expire_after=5,
-)
 
 networkLink = {"mainnet": "", "goerli": "-goerli", "sepolia": "-sepolia"}
 
@@ -31,8 +25,10 @@ def contractLoader(contractAddress, contractBytecode, networkName):
                 # Get source code vs abi
                 sourceCode = str(data["result"][0]["SourceCode"])
                 abi = str(data["result"][0]["ABI"])
-                
-                insertCotnractInfoToDB(contractAddress, sourceCode, contractBytecode, abi)
+
+                insertCotnractInfoToDB(
+                    contractAddress, sourceCode, contractBytecode, abi
+                )
             else:
                 print("API call failed. Check your API key and contract address.")
         else:
