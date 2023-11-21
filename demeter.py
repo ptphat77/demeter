@@ -11,7 +11,7 @@ from contractLoader import contractLoader
 
 
 #  Setup scan tool before scanning
-setupScanTool()
+# setupScanTool()
 
 
 def hexToString(hex):
@@ -21,59 +21,55 @@ def hexToString(hex):
 ##### Get contract information #####
 
 
-networkNames = ["mainnet", "goerli", "sepolia"]
-
-for networkName in networkNames:
-    # Connect to Ethereum node
-    w3 = Web3(
-        Web3.HTTPProvider(
-            "https://{}.infura.io/v3/{}".format(
-                networkName, variableEnv["INFURA_API_KEY"]
-            )
-        )
+# Connect to Ethereum node
+w3 = Web3(
+    Web3.HTTPProvider(
+        "https://mainnet.infura.io/v3/{}".format(variableEnv["INFURA_API_KEY"])
     )
+)
 
-    # startBlockNumber = getStartBlockNumber(networkName)
-    # startBlockNumber = 14047678
-    startBlockNumber = 14047731
-    endBlockNumber = w3.eth.get_block_number()
+# startBlockNumber = getStartBlockNumber()
+# startBlockNumber = 14047678
+startBlockNumber = 14047731
+endBlockNumber = w3.eth.get_block_number()
 
-    for blockNumber in range(startBlockNumber, endBlockNumber):
-        block = w3.eth.get_block(blockNumber, True)
-        print(blockNumber)
-        for transaction in block["transactions"]:
-            if hexToString(transaction["input"]).startswith("0x60806040"):
-                transactionInfo = w3.eth.get_transaction_receipt(
-                    hexToString(transaction["hash"])
+for blockNumber in range(startBlockNumber, endBlockNumber):
+    block = w3.eth.get_block(blockNumber, True)
+    print(blockNumber)
+    for transaction in block["transactions"]:
+        if hexToString(transaction["input"]).startswith("0x60806040"):
+            transactionInfo = w3.eth.get_transaction_receipt(
+                hexToString(transaction["hash"])
+            )
+
+            contractAddress = transactionInfo["contractAddress"]
+            if len(contractAddress) == 42:
+                print("Found contract!!!")
+                ugly_bytecode = w3.eth.get_code(contractAddress)
+                contractBytecode = hexToString(ugly_bytecode)
+
+                # Collect contract information
+                # contractLoader(contractAddress, contractBytecode, networkName)
+
+                # Remove prefix 0x
+                contractBytecode = contractBytecode.replace("0x", "", 1)
+
+                # preprocessBytecode
+                preprocessedBytecode = preprocessBytecode(contractBytecode)
+
+                # After preprocess bytecode, merge operations => may be duplicate contract preprocessBytecode
+                if isExistsPreprocessedBytecode(preprocessedBytecode):
+                    print("Duplicate bytecode!!!")
+                    continue
+
+                # scan vulnerability
+                # scanResult = scanVulnerabilities(contractBytecode)
+
+                insertPreprocessedBytecodeToDB(
+                    contractAddress,
+                    preprocessedBytecode,
+                    "vulner1;vulner2",
+                    True,
                 )
 
-                contractAddress = transactionInfo["contractAddress"]
-                if len(contractAddress) == 42:
-                    print("Found contract!!!")
-                    ugly_bytecode = w3.eth.get_code(contractAddress)
-                    contractBytecode = hexToString(ugly_bytecode)
-
-                    # Collect contract information
-                    contractLoader(contractAddress, contractBytecode, networkName)
-
-                    # Remove prefix 0x
-                    contractBytecode = contractBytecode.replace("0x", "", 1)
-
-                    # preprocessBytecode
-                    preprocessedBytecode = preprocessBytecode(contractBytecode)
-
-                    # After preprocess bytecode, merge operations => may be duplicate contract preprocessBytecode
-                    if isExistsPreprocessedBytecode(preprocessedBytecode):
-                        print("Duplicate bytecode!!!")
-                        continue
-
-                    # scan vulnerability
-                    scanResult = scanVulnerabilities(contractBytecode)
-
-                    insertPreprocessedBytecodeToDB(
-                        preprocessedBytecode,
-                        scanResult["vulnerabilitiesSummary"],
-                        scanResult["labelSummary"],
-                    )
-
-        updateStartBlockNumber(networkName, blockNumber + 1)
+    updateStartBlockNumber(blockNumber + 1)

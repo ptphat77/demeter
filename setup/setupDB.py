@@ -17,6 +17,7 @@ try:
     # Create contract_dataset table
     create_script = """
         CREATE TABLE IF NOT EXISTS contract_dataset (
+            address varchar(42) NOT NULL,
             md5_index text NOT NULL,
             preprocess_bytecode text NOT NULL,
             vulnerabilities text NOT NULL,

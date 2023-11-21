@@ -37,6 +37,3 @@ def contractLoader(contractAddress, contractBytecode, networkName):
             )
     except Exception as e:
         print(f"An error occurred: {str(e)}")
-
-
-# contractBytecode("","","")

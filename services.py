@@ -23,11 +23,11 @@ def queryExec(queryScript, isHasReturn=True, *datas):
         exit()
 
 
-def getStartBlockNumber(networkName):
+def getStartBlockNumber():
     resultQuery = queryExec(
         "SELECT block_number FROM start_block_number WHERE network_name=%s",
         True,
-        networkName,
+        "mainnet",
     )
     return resultQuery[0]
 
@@ -41,12 +41,15 @@ def isExistsPreprocessedBytecode(preprocessedBytecode):
     return resultQuery
 
 
-def insertPreprocessedBytecodeToDB(preprocessedBytecode, vulnerabilities, label):
+def insertPreprocessedBytecodeToDB(
+    contractAddress, preprocessedBytecode, vulnerabilities, label
+):
     queryExec(
-        """ INSERT INTO contract_dataset (md5_index, preprocess_bytecode, vulnerabilities, label)
-            VALUES (md5(%s), %s, %s, %s)
+        """ INSERT INTO contract_dataset (address, md5_index, preprocess_bytecode, vulnerabilities, label)
+            VALUES (%s, md5(%s), %s, %s, %s)
         """,
         False,
+        contractAddress,
         preprocessedBytecode,
         preprocessedBytecode,
         vulnerabilities,
@@ -54,12 +57,12 @@ def insertPreprocessedBytecodeToDB(preprocessedBytecode, vulnerabilities, label)
     )
 
 
-def updateStartBlockNumber(networkName, blockNumber):
+def updateStartBlockNumber(blockNumber):
     queryExec(
         "UPDATE start_block_number SET block_number=%s WHERE network_name=%s",
         False,
         blockNumber,
-        networkName,
+        "mainnet",
     )
 
 
