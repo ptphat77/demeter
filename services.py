@@ -25,7 +25,9 @@ def queryExec(queryScript, isHasReturn=True, *datas):
 
 def getStartBlockNumber():
     resultQuery = queryExec(
-        "SELECT block_number FROM start_block_number WHERE network_name=%s",
+        '''WITH resultPreviousQuery as (UPDATE start_block_number SET block_number=block_number + 1 WHERE network_name='mainnet' RETURNING block_number - 1 AS previous_block_number)
+            INSERT INTO pending_block_number (block_number, time) VALUES ((SELECT previous_block_number FROM resultPreviousQuery), (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')) ON CONFLICT DO NOTHING RETURNING block_number - 1
+        ''',
         True,
         "mainnet",
     )
@@ -57,15 +59,6 @@ def insertPreprocessedBytecodeToDB(
     )
 
 
-def updateStartBlockNumber(blockNumber):
-    queryExec(
-        "UPDATE start_block_number SET block_number=%s WHERE network_name=%s",
-        False,
-        blockNumber,
-        "mainnet",
-    )
-
-
 def insertCotnractInfoToDB(address, sourceCode, bytecode, abi):
     queryExec(
         "INSERT INTO contract_info (address, source_code, bytecode, abi) VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING",
@@ -74,4 +67,31 @@ def insertCotnractInfoToDB(address, sourceCode, bytecode, abi):
         sourceCode,
         bytecode,
         abi,
+    )
+
+
+def getTimeoutPendingBlockNumber():
+    resultQuery = queryExec(
+        "UPDATE pending_block_number SET time=(CURRENT_TIMESTAMP AT TIME ZONE 'UTC') WHERE time < ((CURRENT_TIMESTAMP AT TIME ZONE 'UTC') - INTERVAL '1 hour') RETURNING block_number",
+        True,
+    )
+    if resultQuery:
+        return resultQuery[0]
+    else:
+        return None
+
+
+def addPendingBlockNumber(blockNumber):
+    queryExec(
+        "INSERT INTO pending_block_number (block_number, time) VALUES (%s, (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')) ON CONFLICT DO NOTHING",
+        False,
+        blockNumber,
+    )
+
+
+def removePendingBlockNumber(blockNumber):
+    queryExec(
+        "DELETE FROM pending_block_number WHERE block_number=%s",
+        False,
+        blockNumber,
     )

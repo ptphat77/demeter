@@ -30,12 +30,20 @@ w3 = Web3(
 
 # startBlockNumber = getStartBlockNumber()
 # startBlockNumber = 14047678
-startBlockNumber = 14047731
+# startBlockNumber = 14047731
 endBlockNumber = w3.eth.get_block_number()
 
-for blockNumber in range(startBlockNumber, endBlockNumber):
+while True:
+    PendingBlockNumber = getTimeoutPendingBlockNumber()
+
+    blockNumber = PendingBlockNumber if PendingBlockNumber else getStartBlockNumber()
+
+    if blockNumber > endBlockNumber:
+        endBlockNumber = w3.eth.get_block_number()
+        continue
+
     block = w3.eth.get_block(blockNumber, True)
-    print(blockNumber)
+    print(">>>blockNumber", blockNumber)
     for transaction in block["transactions"]:
         if hexToString(transaction["input"]).startswith("0x60806040"):
             transactionInfo = w3.eth.get_transaction_receipt(
@@ -72,4 +80,4 @@ for blockNumber in range(startBlockNumber, endBlockNumber):
                     True,
                 )
 
-    updateStartBlockNumber(blockNumber + 1)
+    removePendingBlockNumber(blockNumber)

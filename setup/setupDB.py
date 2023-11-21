@@ -71,6 +71,16 @@ try:
             )
             cur.execute(insert_script)
 
+    # Create pending_block_number table
+    create_script = """
+        CREATE TABLE IF NOT EXISTS pending_block_number (
+            block_number int NOT NULL,
+            time TIMESTAMP NOT NULL,
+            UNIQUE(block_number)
+        )
+    """
+    cur.execute(create_script)
+
     print("Setup database successfully!!!")
     conn.commit()
 except Exception as error:
