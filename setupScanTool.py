@@ -2,10 +2,10 @@ import subprocess
 import sys
 
 
-def setupScanTool():
+def setupScanTool(threadNo):
     # Setup oyente
     subprocess.check_output(
-        """docker rm --force oyentecon && docker run -d --name oyentecon -it luongnguyen/oyente sh && docker cp ./customCode/oyente/symExec.py oyentecon:/oyente/oyente/symExec.py && docker cp ./customCode/oyente/oyente.py oyentecon:/oyente/oyente/oyente.py""",
+        f"docker rm --force oyenteContainer-{threadNo} && docker run -d --name oyenteContainer-{threadNo} -it luongnguyen/oyente sh && docker cp ./customCode/oyente/symExec.py oyenteContainer-{threadNo}:/oyente/oyente/symExec.py && docker cp ./customCode/oyente/oyente.py oyenteContainer-{threadNo}:/oyente/oyente/oyente.py",
         shell=True,
     )
 

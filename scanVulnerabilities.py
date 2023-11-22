@@ -1,6 +1,7 @@
 import sys
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 
 # Run scan command && Extract vulnerbilities name
@@ -36,7 +37,7 @@ def scanAndExtractVuln(vulnArr, scanCommand, timeout, toolName):
     return {"vulnerabilities": vulnerabilities, "label": label}
 
 
-def callOyente():
+def callOyente(threadNo):
     vulnArr = [
         "Callstack Depth Attack Vulnerability",
         "Transaction-Ordering Dependence (TOD)",
@@ -45,17 +46,17 @@ def callOyente():
     ]
 
     subprocess.check_output(
-        "docker cp ./bytecode.txt oyentecon:/oyente/oyente/bytecode.txt", shell=True
+        f"docker cp ./bytecode.txt oyenteContainer-{threadNo}:/oyente/oyente/bytecode.txt", shell=True
     )
 
     timeout = 90
-    scanCommand = f"docker exec oyentecon python oyente/oyente.py -s /oyente/oyente/bytecode.txt -b -ce --timeout {timeout}"
+    scanCommand = f"docker exec oyenteContainer-{threadNo} python oyente/oyente.py -s /oyente/oyente/bytecode.txt -b -ce --timeout {timeout}"
     toolName = "Oyente"
 
     return scanAndExtractVuln(vulnArr, scanCommand, timeout * 2, toolName)
 
 
-def callMythril():
+def callMythril(threadNo):
     vulnArr = [
         "Exception State",
         "Multiple Calls in a Single Transaction",
@@ -80,7 +81,7 @@ def callMythril():
 
 
 # Main function
-def scanVulnerabilities(originBytecode):
+def scanVulnerabilities(originBytecode, threadNo):
     with open("./bytecode.txt", "w") as file:
         file.write(originBytecode)
 
@@ -88,7 +89,7 @@ def scanVulnerabilities(originBytecode):
     threadNames = {"oyente": callMythril, "mythril": callOyente}
 
     with ThreadPoolExecutor() as executor:
-        futures = {name: executor.submit(func) for name, func in threadNames.items()}
+        futures = {name: executor.submit(partial(globals()[name], func), param=threadNo) for name, func in threadNames.items()}
 
         threadResults = {name: future.result() for name, future in futures.items()}
 

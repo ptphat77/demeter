@@ -11,10 +11,6 @@ from services import *
 from contractLoader import contractLoader
 
 
-#  Setup scan tool before scanning
-setupScanTool()
-
-
 def hexToString(hex):
     return w3.to_hex(hex)
 
@@ -26,7 +22,10 @@ def hexToString(hex):
 w3 = Web3(Web3.HTTPProvider(f"https://mainnet.infura.io/v3/{variableEnv['INFURA_API_KEY']}"))
 
 
-def demeter():
+def demeter(threadNo):
+    #  Setup scan tool before scanning
+    setupScanTool(threadNo)
+
     endBlockNumber = w3.eth.get_block_number()
 
     while True:
@@ -69,7 +68,7 @@ def demeter():
                         continue
 
                     # scan vulnerability
-                    scanResult = scanVulnerabilities(contractBytecode)
+                    scanResult = scanVulnerabilities(contractBytecode, threadNo)
 
                     insertPreprocessedBytecodeToDB(
                         contractAddress,
@@ -83,7 +82,7 @@ def demeter():
 if __name__ == "__main__":
     threadNumber = int(variableEnv['THREAD_NUMBER'])
     threads = []
-    for _ in range(threadNumber):
-        thread = threading.Thread(target=demeter)
+    for threadNo in range(threadNumber):
+        thread = threading.Thread(target=demeter, args=(threadNo,))
         threads.append(thread)
         thread.start()
