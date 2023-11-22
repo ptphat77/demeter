@@ -12,7 +12,7 @@ from contractLoader import contractLoader
 
 
 #  Setup scan tool before scanning
-# setupScanTool()
+setupScanTool()
 
 
 def hexToString(hex):
@@ -69,19 +69,19 @@ def demeter():
                         continue
 
                     # scan vulnerability
-                    # scanResult = scanVulnerabilities(contractBytecode)
+                    scanResult = scanVulnerabilities(contractBytecode)
 
                     insertPreprocessedBytecodeToDB(
                         contractAddress,
                         preprocessedBytecode,
-                        "vulner1;vulner2",
-                        True,
+                        scanResult["vulnerabilitiesSummary"],
+                        scanResult["labelSummary"],
                     )
         removePendingBlockNumber(blockNumber)
 
 
 if __name__ == "__main__":
-    threadNumber = 4
+    threadNumber = int(variableEnv['THREAD_NUMBER'])
     threads = []
     for _ in range(threadNumber):
         thread = threading.Thread(target=demeter)
