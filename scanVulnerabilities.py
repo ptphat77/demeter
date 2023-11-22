@@ -21,7 +21,7 @@ def scanAndExtractVuln(vulnArr, scanCommand, timeout, toolName):
     except subprocess.CalledProcessError as grepexc:
         result = grepexc.output.decode("utf_8", "strict")
         print(
-            ">>> {} error: ".format(toolName),
+            f">>> {toolName} error: ",
             grepexc.returncode,
             result,
         )
@@ -49,9 +49,7 @@ def callOyente():
     )
 
     timeout = 90
-    scanCommand = "docker exec oyentecon python oyente/oyente.py -s /oyente/oyente/bytecode.txt -b -ce --timeout {}".format(
-        timeout
-    )
+    scanCommand = f"docker exec oyentecon python oyente/oyente.py -s /oyente/oyente/bytecode.txt -b -ce --timeout {timeout}"
     toolName = "Oyente"
 
     return scanAndExtractVuln(vulnArr, scanCommand, timeout * 2, toolName)
@@ -75,7 +73,7 @@ def callMythril():
     ]
 
     timeout = 900
-    scanCommand = "myth analyze -f bytecode.txt --execution-timeout {}".format(timeout)
+    scanCommand = f"myth analyze -f bytecode.txt --execution-timeout {timeout}"
     Mythril = "Mythril"
 
     return scanAndExtractVuln(vulnArr, scanCommand, timeout * 2, Mythril)

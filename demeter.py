@@ -1,6 +1,6 @@
 # import library, module python
 from web3 import Web3
-import asyncio
+import threading
 
 # import file
 from checkEnvironment import variableEnv
@@ -23,17 +23,10 @@ def hexToString(hex):
 
 
 # Connect to Ethereum node
-w3 = Web3(
-    Web3.HTTPProvider(
-        "https://mainnet.infura.io/v3/{}".format(variableEnv["INFURA_API_KEY"])
-    )
-)
+w3 = Web3(Web3.HTTPProvider(f"https://mainnet.infura.io/v3/{variableEnv['INFURA_API_KEY']}"))
 
 
-async def demeter():
-    # startBlockNumber = getStartBlockNumber()
-    # startBlockNumber = 14047678
-    # startBlockNumber = 14047731
+def demeter():
     endBlockNumber = w3.eth.get_block_number()
 
     while True:
@@ -62,7 +55,7 @@ async def demeter():
                     contractBytecode = hexToString(ugly_bytecode)
 
                     # Collect contract information
-                    # contractLoader(contractAddress, contractBytecode, networkName)
+                    contractLoader(contractAddress, contractBytecode)
 
                     # Remove prefix 0x
                     contractBytecode = contractBytecode.replace("0x", "", 1)
@@ -87,16 +80,10 @@ async def demeter():
         removePendingBlockNumber(blockNumber)
 
 
-async def main():
-    # Create Multi-thread scanner
-    threadNumber = 4
-    tasks = []
-    for _ in range(threadNumber):
-        task = asyncio.create_task(demeter())
-        tasks.append(task)
-
-    await asyncio.gather(*tasks)
-
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    threadNumber = 4
+    threads = []
+    for _ in range(threadNumber):
+        thread = threading.Thread(target=demeter)
+        threads.append(thread)
+        thread.start()

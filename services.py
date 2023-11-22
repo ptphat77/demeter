@@ -72,7 +72,7 @@ def insertCotnractInfoToDB(address, sourceCode, bytecode, abi):
 
 def getTimeoutPendingBlockNumber():
     resultQuery = queryExec(
-        "UPDATE pending_block_number SET time=(CURRENT_TIMESTAMP AT TIME ZONE 'UTC') WHERE time < ((CURRENT_TIMESTAMP AT TIME ZONE 'UTC') - INTERVAL '1 hour') RETURNING block_number",
+        "UPDATE pending_block_number SET time=(CURRENT_TIMESTAMP AT TIME ZONE 'UTC') WHERE time < ((CURRENT_TIMESTAMP AT TIME ZONE 'UTC') - INTERVAL '1 minute') RETURNING block_number",
         True,
     )
     if resultQuery:

@@ -62,13 +62,11 @@ try:
 
         # add start_block_number default value is 0
         networkNames = ["mainnet", "goerli", "sepolia"]
-        for network in networkNames:
-            insert_script = """
+        for networkName in networkNames:
+            insert_script = f"""
                 INSERT INTO start_block_number (network_name, block_number)
-                VALUES ('{}',0);
-            """.format(
-                network
-            )
+                VALUES ('{networkName}',0);
+            """
             cur.execute(insert_script)
 
     # Create pending_block_number table
@@ -84,7 +82,7 @@ try:
     print("Setup database successfully!!!")
     conn.commit()
 except Exception as error:
-    print(">>> database error: ", error)
+    print(">>> Database error: ", error)
 finally:
     if cur != None:
         cur.close()
