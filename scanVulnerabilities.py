@@ -89,7 +89,7 @@ def scanVulnerabilities(originBytecode, threadNo):
     threadNames = {"oyente": callMythril, "mythril": callOyente}
 
     with ThreadPoolExecutor() as executor:
-        futures = {name: executor.submit(partial(globals()[name], func), param=threadNo) for name, func in threadNames.items()}
+        futures = {name: executor.submit(func, threadNo) for name, func in threadNames.items()}
 
         threadResults = {name: future.result() for name, future in futures.items()}
 
