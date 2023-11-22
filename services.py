@@ -49,6 +49,7 @@ def insertPreprocessedBytecodeToDB(
     queryExec(
         """ INSERT INTO contract_dataset (address, md5_index, preprocess_bytecode, vulnerabilities, label)
             VALUES (%s, md5(%s), %s, %s, %s)
+            ON CONFLICT DO NOTHING
         """,
         False,
         contractAddress,
