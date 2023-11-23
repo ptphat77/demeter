@@ -11,20 +11,22 @@ from services import *
 from contractLoader import contractLoader
 
 
-def hexToString(hex):
-    return w3.to_hex(hex)
-
-
 ##### Get contract information #####
-
-
-# Connect to Ethereum node
-w3 = Web3(Web3.HTTPProvider(f"https://mainnet.infura.io/v3/{variableEnv['INFURA_API_KEY']}"))
 
 
 def demeter(threadNo):
     #  Setup scan tool before scanning
     setupScanTool(threadNo)
+
+    def hexToString(hex):
+        return w3.to_hex(hex)
+
+    # Connect to Ethereum node
+    w3 = Web3(
+        Web3.HTTPProvider(
+            f"https://mainnet.infura.io/v3/{variableEnv[f'INFURA_API_KEY_{threadNo}']}"
+        )
+    )
 
     endBlockNumber = w3.eth.get_block_number()
 
@@ -80,7 +82,7 @@ def demeter(threadNo):
 
 
 if __name__ == "__main__":
-    threadNumber = int(variableEnv['THREAD_NUMBER'])
+    threadNumber = int(variableEnv["THREAD_NUMBER"])
     threads = []
     for threadNo in range(threadNumber):
         thread = threading.Thread(target=demeter, args=(threadNo,))
