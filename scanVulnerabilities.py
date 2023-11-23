@@ -49,7 +49,7 @@ def callOyente(threadNo):
         f"docker cp ./bytecode.txt oyenteContainer-{threadNo}:/oyente/oyente/bytecode.txt", shell=True
     )
 
-    timeout = 90
+    timeout = 900
     scanCommand = f"docker exec oyenteContainer-{threadNo} python oyente/oyente.py -s /oyente/oyente/bytecode.txt -b -ce --timeout {timeout}"
     toolName = "Oyente"
 
