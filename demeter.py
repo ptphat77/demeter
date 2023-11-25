@@ -50,7 +50,7 @@ def demeter(threadNo):
                 )
 
                 contractAddress = transactionInfo["contractAddress"]
-                if len(contractAddress) == 42:
+                if not (contractAddress == None or len(contractAddress) != 42):
                     print("Found contract!!!")
                     ugly_bytecode = w3.eth.get_code(contractAddress)
                     contractBytecode = hexToString(ugly_bytecode)
