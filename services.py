@@ -25,9 +25,9 @@ def queryExec(queryScript, isHasReturn=True, *datas):
 
 def getStartBlockNumber():
     resultQuery = queryExec(
-        '''WITH resultPreviousQuery as (UPDATE start_block_number SET block_number=block_number + 1 WHERE network_name='mainnet' RETURNING block_number - 1 AS previous_block_number)
+        """WITH resultPreviousQuery as (UPDATE start_block_number SET block_number=block_number + 1 WHERE network_name='mainnet' RETURNING block_number - 1 AS previous_block_number)
             INSERT INTO pending_block_number (block_number, time) VALUES ((SELECT previous_block_number FROM resultPreviousQuery), (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')) ON CONFLICT DO NOTHING RETURNING block_number - 1
-        ''',
+        """,
         True,
         "mainnet",
     )
