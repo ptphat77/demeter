@@ -15,7 +15,7 @@ from input_helper import InputHelper
 
 def cmd_exists(cmd):
     return subprocess.call("type " + cmd, shell=True,
-                           stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
 def compare_versions(version1, version2):
     def normalize(v):

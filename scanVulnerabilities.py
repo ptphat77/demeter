@@ -1,7 +1,6 @@
 import sys
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
-from functools import partial
 
 
 # Run scan command && Extract vulnerbilities name
@@ -22,7 +21,7 @@ def scanAndExtractVuln(vulnArr, scanCommand, timeout, toolName):
     except subprocess.CalledProcessError as grepexc:
         result = grepexc.output.decode("utf_8", "strict")
         print(
-            f">>> {toolName} error: ",
+            ">>> {} error: ".format(toolName),
             grepexc.returncode,
             result,
         )
@@ -37,7 +36,7 @@ def scanAndExtractVuln(vulnArr, scanCommand, timeout, toolName):
     return {"vulnerabilities": vulnerabilities, "label": label}
 
 
-def callOyente(threadNo):
+def callOyente():
     vulnArr = [
         "Callstack Depth Attack Vulnerability",
         "Transaction-Ordering Dependence (TOD)",
@@ -46,17 +45,19 @@ def callOyente(threadNo):
     ]
 
     subprocess.check_output(
-        f"docker cp ./bytecode.txt oyenteContainer-{threadNo}:/oyente/oyente/bytecode.txt", shell=True
+        "docker cp ./bytecode.txt oyentecon:/oyente/oyente/bytecode.txt", shell=True
     )
 
     timeout = 90
-    scanCommand = f"docker exec oyenteContainer-{threadNo} python oyente/oyente.py -s /oyente/oyente/bytecode.txt -b -ce --timeout {timeout}"
+    scanCommand = "docker exec oyentecon python oyente/oyente.py -s /oyente/oyente/bytecode.txt -b -ce --timeout {}".format(
+        timeout
+    )
     toolName = "Oyente"
 
     return scanAndExtractVuln(vulnArr, scanCommand, timeout * 2, toolName)
 
 
-def callMythril(threadNo):
+def callMythril():
     vulnArr = [
         "Exception State",
         "Multiple Calls in a Single Transaction",
@@ -74,14 +75,27 @@ def callMythril(threadNo):
     ]
 
     timeout = 900
-    scanCommand = f"myth analyze -f bytecode.txt --execution-timeout {timeout}"
+    scanCommand = "myth analyze -f bytecode.txt --execution-timeout {}".format(timeout)
     Mythril = "Mythril"
 
     return scanAndExtractVuln(vulnArr, scanCommand, timeout * 2, Mythril)
 
+def callMaian():
+    vulnArr = [
+        #file suicidal nó bị dính cái số 11111Suicidal
+        "Suicidal",
+        "Prodigal",
+        "Greedy"
+    ]
+
+    timeout = 900
+    scanCommand = "python3 mainan.py -b bytecode.txt -c 0 && python3 mainan.py -b bytecode.txt -c 1 && python3 mainan.py -b bytecode.txt -c 2  {}".format(timeout)
+    Maian = "Maian"
+
+    return scanAndExtractVuln(vulnArr, scanCommand, timeout * 2, Maian)
 
 # Main function
-def scanVulnerabilities(originBytecode, threadNo):
+def scanVulnerabilities(originBytecode):
     with open("./bytecode.txt", "w") as file:
         file.write(originBytecode)
 
@@ -89,7 +103,7 @@ def scanVulnerabilities(originBytecode, threadNo):
     threadNames = {"oyente": callMythril, "mythril": callOyente}
 
     with ThreadPoolExecutor() as executor:
-        futures = {name: executor.submit(func, threadNo) for name, func in threadNames.items()}
+        futures = {name: executor.submit(func) for name, func in threadNames.items()}
 
         threadResults = {name: future.result() for name, future in futures.items()}
 

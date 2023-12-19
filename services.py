@@ -23,13 +23,11 @@ def queryExec(queryScript, isHasReturn=True, *datas):
         exit()
 
 
-def getStartBlockNumber():
+def getStartBlockNumber(networkName):
     resultQuery = queryExec(
-        '''WITH resultPreviousQuery as (UPDATE start_block_number SET block_number=block_number + 1 WHERE network_name='mainnet' RETURNING block_number - 1 AS previous_block_number)
-            INSERT INTO pending_block_number (block_number, time) VALUES ((SELECT previous_block_number FROM resultPreviousQuery), (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')) ON CONFLICT DO NOTHING RETURNING block_number - 1
-        ''',
+        "SELECT block_number FROM start_block_number WHERE network_name=%s",
         True,
-        "mainnet",
+        networkName,
     )
     return resultQuery[0]
 
@@ -43,20 +41,25 @@ def isExistsPreprocessedBytecode(preprocessedBytecode):
     return resultQuery
 
 
-def insertPreprocessedBytecodeToDB(
-    contractAddress, preprocessedBytecode, vulnerabilities, label
-):
+def insertPreprocessedBytecodeToDB(preprocessedBytecode, vulnerabilities, label):
     queryExec(
-        """ INSERT INTO contract_dataset (address, md5_index, preprocess_bytecode, vulnerabilities, label)
-            VALUES (%s, md5(%s), %s, %s, %s)
-            ON CONFLICT DO NOTHING
+        """ INSERT INTO contract_dataset (md5_index, preprocess_bytecode, vulnerabilities, label)
+            VALUES (md5(%s), %s, %s, %s)
         """,
         False,
-        contractAddress,
         preprocessedBytecode,
         preprocessedBytecode,
         vulnerabilities,
         str(label),
+    )
+
+
+def updateStartBlockNumber(networkName, blockNumber):
+    queryExec(
+        "UPDATE start_block_number SET block_number=%s WHERE network_name=%s",
+        False,
+        blockNumber,
+        networkName,
     )
 
 
@@ -68,23 +71,4 @@ def insertCotnractInfoToDB(address, sourceCode, bytecode, abi):
         sourceCode,
         bytecode,
         abi,
-    )
-
-
-def getTimeoutPendingBlockNumber():
-    resultQuery = queryExec(
-        "UPDATE pending_block_number SET time=(CURRENT_TIMESTAMP AT TIME ZONE 'UTC') WHERE block_number IN ( SELECT block_number FROM pending_block_number WHERE time < ((CURRENT_TIMESTAMP AT TIME ZONE 'UTC') - INTERVAL '1 hour') ORDER BY time LIMIT 1) RETURNING block_number",
-        True,
-    )
-    if resultQuery:
-        return resultQuery[0]
-    else:
-        return None
-
-
-def removePendingBlockNumber(blockNumber):
-    queryExec(
-        "DELETE FROM pending_block_number WHERE block_number=%s",
-        False,
-        blockNumber,
     )

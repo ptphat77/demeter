@@ -6,9 +6,9 @@ from services import insertCotnractInfoToDB
 networkLink = {"mainnet": "", "goerli": "-goerli", "sepolia": "-sepolia"}
 
 
-def contractLoader(contractAddress, contractBytecode):
-    url = "https://api.etherscan.io/api?module=contract&action=getsourcecode&address={}&apikey={}".format(
-        contractAddress, variableEnv["ETHERSCAN_API_KEY"]
+def contractLoader(contractAddress, contractBytecode, networkName):
+    url = "https://api{}.etherscan.io/api?module=contract&action=getsourcecode&address={}&apikey={}".format(
+        networkLink[networkName], contractAddress, variableEnv["ETHERSCAN_API_KEY"]
     )
 
     try:
@@ -36,5 +36,7 @@ def contractLoader(contractAddress, contractBytecode):
                 "Request to Etherscan API failed. Please check your network connection or try again later."
             )
     except Exception as e:
-        print(f">>> Etherscan Error: {str(e)}")
-        contractLoader(contractAddress, contractBytecode)
+        print(f"An error occurred: {str(e)}")
+
+
+# contractBytecode("","","")

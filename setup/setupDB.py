@@ -17,7 +17,6 @@ try:
     # Create contract_dataset table
     create_script = """
         CREATE TABLE IF NOT EXISTS contract_dataset (
-            address varchar(42) NOT NULL,
             md5_index text NOT NULL,
             preprocess_bytecode text NOT NULL,
             vulnerabilities text NOT NULL,
@@ -62,27 +61,19 @@ try:
 
         # add start_block_number default value is 0
         networkNames = ["mainnet", "goerli", "sepolia"]
-        for networkName in networkNames:
-            insert_script = f"""
+        for network in networkNames:
+            insert_script = """
                 INSERT INTO start_block_number (network_name, block_number)
-                VALUES ('{networkName}',0);
-            """
+                VALUES ('{}',0);
+            """.format(
+                network
+            )
             cur.execute(insert_script)
-
-    # Create pending_block_number table
-    create_script = """
-        CREATE TABLE IF NOT EXISTS pending_block_number (
-            block_number int NOT NULL,
-            time TIMESTAMP NOT NULL,
-            UNIQUE(block_number)
-        )
-    """
-    cur.execute(create_script)
 
     print("Setup database successfully!!!")
     conn.commit()
 except Exception as error:
-    print(">>> Database error: ", error)
+    print(">>> database error: ", error)
 finally:
     if cur != None:
         cur.close()
