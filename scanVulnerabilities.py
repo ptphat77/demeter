@@ -79,6 +79,20 @@ def callMythril(threadNo):
 
     return scanAndExtractVuln(vulnArr, scanCommand, timeout * 2, Mythril)
 
+def callMaian():
+    vulnArr = [
+        #file suicidal nó bị dính cái số 11111Suicidal
+        "Suicidal",
+        "Prodigal",
+        "Greedy"
+    ]
+
+    timeout = 900
+    scanCommand = "python3 mainan.py -b bytecode.txt -c 0 && python3 mainan.py -b bytecode.txt -c 1 && python3 mainan.py -b bytecode.txt -c 2  {}".format(timeout)
+    Maian = "Maian"
+
+    return scanAndExtractVuln(vulnArr, scanCommand, timeout * 2, Maian)
+
 
 # Main function
 def scanVulnerabilities(originBytecode, threadNo):
@@ -86,7 +100,7 @@ def scanVulnerabilities(originBytecode, threadNo):
         file.write(originBytecode)
 
     # Call scan function with multithreading
-    threadNames = {"oyente": callMythril, "mythril": callOyente}
+    threadNames = {"oyente": callMythril, "mythril": callOyente, "maian": callMaian}
 
     with ThreadPoolExecutor() as executor:
         futures = {name: executor.submit(func, threadNo) for name, func in threadNames.items()}
@@ -94,12 +108,13 @@ def scanVulnerabilities(originBytecode, threadNo):
         threadResults = {name: future.result() for name, future in futures.items()}
 
     # Determine label
-    labelSummary = threadResults["oyente"]["label"] or threadResults["mythril"]["label"]
+    labelSummary = threadResults["oyente"]["label"] or threadResults["mythril"]["label"] or threadResults["maian"]["label"]
 
     # Merge all vulnerabilities
     vulnerabilitiesSummary = (
         threadResults["oyente"]["vulnerabilities"]
         + threadResults["mythril"]["vulnerabilities"]
+        + threadResults["maian"]["vulnerabilities"]
     )
 
     if vulnerabilitiesSummary == "":
